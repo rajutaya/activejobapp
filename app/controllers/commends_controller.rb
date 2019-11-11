@@ -25,12 +25,10 @@ class CommendsController < ApplicationController
   # POST /commends.json
   def create
     @commend = Commend.new(commend_params)
-    to = 'rajkumar@housingman.com'
-    msg = 'Hi this is testing mail'
-    p UserNotifierJob.set(wait: 25.seconds).perform_later(msg,to)
 
     respond_to do |format|
       if @commend.save
+        UserNotifierJob.set(wait: 25.seconds).perform_later(@commend.try(:content),@commend.try(:email))
         format.html { redirect_to @commend, notice: 'Commend was successfully created.' }
         format.json { render :show, status: :created, location: @commend }
       else
@@ -72,6 +70,6 @@ class CommendsController < ApplicationController
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def commend_params
-      params.require(:commend).permit(:content)
+      params.require(:commend).permit(:content, :email)
     end
 end
